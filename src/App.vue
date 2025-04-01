@@ -17,55 +17,53 @@ export default {
 </script>
 
 <template>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
-        <div class="container-fluid">
-            <a class="navbar-brand" href="#">DV Social</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
-                aria-controls="navbarNav" aria-expanded="false" aria-label="Mostrar u ocultar navegación">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav">
-                    <li class="nav-item">
-                        <!-- <router-link class="nav-link" to="/">Home</router-link> -->
-                        <RouterLink class="nav-link" to="/">Home</RouterLink>
-                    </li>
-                    <li class="nav-item">
-                        <RouterLink class="nav-link" to="/chat-global">Chat Global</RouterLink>
-                    </li>
-                    <li class="nav-item">
-                        <RouterLink class="nav-link" to="/ingresar">Iniciar Sesión</RouterLink>
-                    </li>
-                    <li class="nav-item">
-                        <RouterLink class="nav-link" to="/registro">Registrarse</RouterLink>
-                    </li>
-                </ul>
-            </div>
-        </div>
+    <!-- 
+    Tailwind sigue, en general, algunas convenciones para sus estilos.
+    - Para algunos estilos que tienen una lista posible de valores ya pre-definidos (y que no colisionan con valores de
+    otros estilos), Tailwind utiliza como nombre de la clase el valor del estilo. Por ejemplo, los display.
+        Si queremos:
+            display: flex;                  => flex
+            display: inline-block;          => inline-block
+            display: grid;                  => grid
+    - Para la mayoría de los estilos, Tailwind utiliza el formato de: estilo-valor
+    El valor puede ser una keyword, en el caso de estilos que así lo requieren (como "justify-contents"), o puede
+    ser una medida (como en "font-size"), o podrá ser algún otro tipo de valor (como para colores).
+    Por ejemplo, clases como "justify-contents", "gap", "margin", "background-color", etc.
+        Si queremos:
+            margin: 1rem;                   => m-4
+            padding-top: .5rem;             => pt-2
+            background-color: white;        => bg-white
+    Lo que pueden ir notando, es que para la mayoría de los estilos que aceptan una dimensión (número más unidad de 
+    medida), aceptan una serie de posibles valores, empezando por un número que es el múltiplo de 4 que queremos aplicar,
+    o dicho de otra forma, el múltiplo de .25rem que queremos aplicar.
+    -->
+    <nav class="flex items-center gap-8 p-4 bg-slate-300">
+        <!-- 
+        Las clases para los estilos de tamaño de tipografía son un poco arbitrarios. No siguen la escala previamente
+        mencionada.
+        -->
+        <RouterLink class="text-lg" to="/">DV Social</RouterLink>
+        <ul class="flex gap-4">
+            <li>
+                <!-- <router-link to="/">Home</router-link> -->
+                <RouterLink to="/">Home</RouterLink>
+            </li>
+            <li>
+                <RouterLink to="/chat-global">Chat Global</RouterLink>
+            </li>
+            <li>
+                <RouterLink to="/ingresar">Iniciar Sesión</RouterLink>
+            </li>
+            <li >
+                <RouterLink to="/registro">Registrarse</RouterLink>
+            </li>
+        </ul>
     </nav>
-    <div class="container py-4">
+    <div class="container mx-auto p-4">
         <!-- <router-view /> -->
         <RouterView />
     </div>
-    <footer class="footer">
+    <footer class="flex justify-center items-center h-25 bg-slate-900 text-white">
         <p>Da Vinci &copy; 2025</p>
     </footer>
 </template>
-
-<style scoped>
-/* Acá podemos poner los estilos que son específicos para este componente.
-Si queremos asegurarnos que los estilos acá indicados solo afecten a *este* componente, debemos agregar el atributo
-"scoped" a <style>. */
-.footer {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    height: 100px;
-    background-color: #333;
-    color: #fff;
-}
-
-.footer p {
-    margin: 0;
-}
-</style>

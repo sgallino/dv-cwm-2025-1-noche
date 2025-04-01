@@ -1,3 +1,12 @@
+<script>
+import MainH1 from '../components/MainH1.vue';
+
+export default {
+    name: 'GlobalChat',
+    components: { MainH1 },
+}
+</script>
+
 <template>
-    <h1 class="mb-4">Chat Global</h1>
+    <MainH1>Chat global</MainH1>
 </template>

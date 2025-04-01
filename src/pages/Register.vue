@@ -1,3 +1,12 @@
+<script>
+import MainH1 from '../components/MainH1.vue';
+
+export default {
+    name: 'Register',
+    components: { MainH1 },
+}
+</script>
+
 <template>
-    <h1 class="mb-4">Crear una Nueva Cuenta</h1>
+    <MainH1>Crear una nueva cuenta</MainH1>
 </template>
