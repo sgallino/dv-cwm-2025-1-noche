@@ -1,15 +1,7 @@
 <script>
+import { nextTick } from 'vue';
 import MainH1 from '../components/MainH1.vue';
-import supabase from '../services/supabase';
-
-// TODO: Repasar más tranquis :D
-// Seteamos un "listener" para recibir los mensajes emitidos en tiempo real por el "canal" "global-chat" 
-// (nombre arbitrario).
-const globalChatChannel = supabase.channel('global-chat', {
-    config: {
-        broadcast: { self: true },
-    }
-});
+import { loadLastGlobalChatMessages, saveGlobalChatMessage, subscribeToGlobalChatNewMessages } from '../services/global-chat';
 
 export default {
     name: 'GlobalChat',
@@ -35,35 +27,50 @@ export default {
     // La propiedad "methods" permite definir las funciones que queremos que el componente tenga.
     methods: {
         async sendMessage() {
-            const res = await globalChatChannel.send({
-                type: 'broadcast',
-                event: 'new-message', // El mismo que estén escuchando abajo.
-                payload: {
-                    id: this.messages.length + 1,
-                    email: this.newMessage.email,
-                    body: this.newMessage.body,
-                    created_at: new Date(),
-                }
+            await saveGlobalChatMessage({
+                email: this.newMessage.email,
+                body: this.newMessage.body,
             });
-            console.log('Mensaje enviado: ', res);
             
             this.newMessage.body = "";
         }
     },
     async mounted() {
-        // Definimos que se escuche el evento de emisión "new-message" (nombre arbitrario).
-        globalChatChannel.on(
-            'broadcast', // Esto es fijo para nuestro caso.
-            {
-                event: 'new-message', // Acá es lo que quieran.
-            },
-            data => {
-                console.log("Data recibida en tiempo real: ", data);
-                this.messages.push(data.payload);
-            } // El callback para cada mensaje recibido.
-        );
-        // Nos suscribimos al canal.
-        globalChatChannel.subscribe();
+        subscribeToGlobalChatNewMessages(async newMessageReceived => {
+            this.messages.push(newMessageReceived);
+            await nextTick();
+            this.$refs.chatContainer.scrollTop = this.$refs.chatContainer.scrollHeight;
+        });
+        // subscribeToGlobalChatNewMessages(function (newMessageReceived) { this.messages.push(newMessageReceived) });
+
+        // Traemos los mensajes iniciales.
+        try {
+            this.messages = await loadLastGlobalChatMessages();
+            // En this.$refs podemos acceder a todas las referencias de los elementos del DOM de nuestro template.
+            // console.log("Contenedor del chat: ", this.$refs.chatContainer);
+            // Agregamos el nextTick() para pedirle a Vue que espere al próximo frame de "redraw" (redibujado en el
+            // browser) antes de ejecutar la actualización del scroll.
+            // ¿Por qué lo necesito?
+            // Nosotros queremos que se carguen los mensajes de chat, y el scroll vertical del contenedor de los
+            // mensajes se vaya al final.
+            // Para esto, es necesario que los mensajes estén renderizados en el DOM. Recién ahí va a existir el 
+            // scroll que podemos mover, y el alto final del mismo.
+            // Si bien ya le indicamos en la instrucción anterior que reciba los mensajes, que son los que luego
+            // recorremos con un v-for, Vue no actualiza el DOM automáticamente cada vez que hacemos algún cambio
+            // del state de algún componente.
+            // Sino que Vue "agrupa" (batch) múltiples modificaciones y las ejecuta todas juntas.
+            // Esto es importante. Porque la tarea más intensiva (o una de ellas) que un browser puede tener que 
+            // realizar, es precisamente, hacer un "redraw".
+            // En la mayoría de los casos, esto es ideal.
+            // Pero hay casos donde necesitamos esperar a que algo en el DOM se actualice antes de realizar la
+            // siguiente instrucción. Como es este caso.
+            // En estos escenarios, Vue nos permite usar el nextTick() que espera al siguiente "batch" de las
+            // instrucciones a actualizar.
+            await nextTick();
+            this.$refs.chatContainer.scrollTop = this.$refs.chatContainer.scrollHeight;
+        } catch (error) {
+            // TODO: Manejar el error...
+        }
     }
 }
 </script>
@@ -72,7 +79,10 @@ export default {
     <MainH1>Chat global</MainH1>
     
     <div class="flex gap-4">
-        <section class="w-9/12 min-h-100 p-4 border border-gray-400 rounded">
+        <section 
+            ref="chatContainer"
+            class="overflow-y-auto w-9/12 h-100 p-4 border border-gray-400 rounded"
+        >
             <h2 class="sr-only">Lista de mensajes</h2>
 
             <ul class="flex flex-col gap-4">
