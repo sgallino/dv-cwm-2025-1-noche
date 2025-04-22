@@ -7,12 +7,31 @@
 // <Componente />.
 // import Home from './pages/Home.vue';
 
+import { subscribeToUserState } from './services/auth';
+
 export default {
     // El "name" define el nombre del componente. Es opcional.
     // Se supone que sea igual que el nombre del archivo.
     name: 'App',
     // "components" recibe un objeto donde define los componentes que se van a usar en el <template>.
     // components: { Home },
+    data() {
+        return {
+            user: {
+                id: null,
+                email: null,
+            },
+        }
+    },
+    methods: {
+        // handleLogin(userData) {
+        //     this.user = userData;
+        // }
+    },
+    mounted() {
+        // Nos suscribimos al estado de autenticación.
+        subscribeToUserState(newUserState => this.user = newUserState);
+    }
 }
 </script>
 
@@ -48,20 +67,30 @@ export default {
                 <!-- <router-link to="/">Home</router-link> -->
                 <RouterLink to="/">Home</RouterLink>
             </li>
-            <li>
-                <RouterLink to="/chat-global">Chat Global</RouterLink>
-            </li>
-            <li>
-                <RouterLink to="/ingresar">Iniciar Sesión</RouterLink>
-            </li>
-            <li >
-                <RouterLink to="/registro">Registrarse</RouterLink>
-            </li>
+            <template v-if="user.id !== null">
+                <li>
+                    <RouterLink to="/chat-global">Chat Global</RouterLink>
+                </li>
+                <li>
+                    {{ user.email }}
+                </li>
+            </template>
+            <template v-else>
+                <li>
+                    <RouterLink to="/ingresar">Iniciar Sesión</RouterLink>
+                </li>
+                <li >
+                    <RouterLink to="/registro">Registrarse</RouterLink>
+                </li>
+            </template>
         </ul>
     </nav>
     <div class="container mx-auto p-4">
         <!-- <router-view /> -->
         <RouterView />
+        <!-- <RouterView
+            @login="handleLogin"
+        /> -->
     </div>
     <footer class="flex justify-center items-center h-25 bg-slate-900 text-white">
         <p>Da Vinci &copy; 2025</p>

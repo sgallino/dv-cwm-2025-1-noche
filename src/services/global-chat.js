@@ -45,7 +45,7 @@ export async function loadLastGlobalChatMessages() {
  * Graba un nuevo mensaje de chat.
  * 
  * @param {{email: string, body: string}} data 
- * @returns Promise
+ * @returns {Promise}
  */
 export async function saveGlobalChatMessage(data) {
     const { error } = await supabase
