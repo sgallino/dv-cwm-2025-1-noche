@@ -1,12 +1,14 @@
 import { createRouter, createWebHistory } from "vue-router";
+import { subscribeToUserState } from "../services/auth";
 // import Home from '../pages/Home.vue';
 
 // Definimos la lista de rutas de nuestra aplicación.
 const routes = [
     { path: '/',                component: () => import('../pages/Home.vue'), },
-    { path: '/chat-global',     component: () => import('../pages/GlobalChat.vue'), },
     { path: '/ingresar',        component: () => import('../pages/Login.vue'), },
     { path: '/registro',        component: () => import('../pages/Register.vue'), },
+    { path: '/chat-global',     component: () => import('../pages/GlobalChat.vue'),     meta: { requiresAuth: true, }, },
+    { path: '/mi-perfil',       component: () => import('../pages/MyProfile.vue'),      meta: { requiresAuth: true, }, },
 ];
 
 // Creamos el router con createRouter.
@@ -22,6 +24,23 @@ const routes = [
 const router = createRouter({
     routes, // routes: routes
     history: createWebHistory(),
+});
+
+let user = {
+    id: null,
+    email: null,
+}
+subscribeToUserState(newUserData => user = newUserData);
+
+// Configuramos el "navigation guard", que se ejecuta en cada acceso a una ruta.
+// Pasamos un callback que va a recibir dos parámetros:
+// 1. Un objeto NormalizedRoute de la ruta a la que se está tratando de acceder.
+// 2. Un objeto NormalizedRoute de la ruta de la que venimos, si aplica.
+router.beforeEach((to, from) => {
+    if(to.meta.requiresAuth && user.id === null) {
+        // Redireccionamos al login, retornando el path de su ruta.
+        return '/ingresar';
+    }
 });
 
 // Para terminar, exportamos el router.

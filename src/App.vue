@@ -7,7 +7,7 @@
 // <Componente />.
 // import Home from './pages/Home.vue';
 
-import { subscribeToUserState } from './services/auth';
+import { logout, subscribeToUserState } from './services/auth';
 
 export default {
     // El "name" define el nombre del componente. Es opcional.
@@ -24,9 +24,14 @@ export default {
         }
     },
     methods: {
-        // handleLogin(userData) {
-        //     this.user = userData;
-        // }
+        handleLogout() {
+            logout();
+
+            // Redireccionamos al form de login.
+            // Para redireccionar programáticamente, podemos usar el método push() del objeto Router.
+            // Al objeto Router, por su parte, lo podemos acceder usando this.$router .
+            this.$router.push('/ingresar');
+        }
     },
     mounted() {
         // Nos suscribimos al estado de autenticación.
@@ -69,15 +74,23 @@ export default {
             </li>
             <template v-if="user.id !== null">
                 <li>
-                    <RouterLink to="/chat-global">Chat Global</RouterLink>
+                    <RouterLink to="/chat-global">Chat global</RouterLink>
                 </li>
                 <li>
-                    {{ user.email }}
+                    <RouterLink to="/mi-perfil">Mi perfil</RouterLink>
+                </li>
+                <li>
+                    <form 
+                        action="#"
+                        @submit.prevent="handleLogout"
+                    >
+                        <button type="submit">{{ user.email }} (cerrar sesión)</button>
+                    </form>
                 </li>
             </template>
             <template v-else>
                 <li>
-                    <RouterLink to="/ingresar">Iniciar Sesión</RouterLink>
+                    <RouterLink to="/ingresar">Iniciar sesión</RouterLink>
                 </li>
                 <li >
                     <RouterLink to="/registro">Registrarse</RouterLink>

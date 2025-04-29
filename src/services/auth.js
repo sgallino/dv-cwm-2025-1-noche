@@ -1,4 +1,5 @@
 import supabase from "./supabase";
+import { createUserProfile, getUserProfileById } from "./user-profiles";
 
 /*
     Para manejar la comunicación del estado de autenticación entre todos los elementos del sistema (componentes, módulos,
@@ -18,10 +19,50 @@ import supabase from "./supabase";
 let user = {
     id: null,
     email: null,
+    display_name: null,
+    bio: null,
+    career: null,
 }
 
 // Definimos un array para guardar la lista de observers que quieren ser notificados de los cambios en "user".
 let observers = [];
+
+// Pedimos cargar la data actual del usuario.
+loadInitialUserState();
+
+/**
+ * Carga la información del usuario autenticado, si es que existe alguno.
+ */
+async function loadInitialUserState() {
+    const { data } = await supabase.auth.getUser();
+
+    if(!data.user) return;
+
+    // Hay un usuario autenticado, así que dejamos pidiendo que se traigan los datos faltantes.
+    // Importante: Noten que NO pusimos el await. Dejamos que corra en paralelo.
+    // TODO: Agregar esto al login, y hacer el editar perfil.
+    getUserProfileById(data.user.id)
+        .then(profileData => {
+            // console.log("Data de perfil: ", profileData);
+            
+            updateUser({
+                display_name: profileData.display_name,
+                bio: profileData.bio,
+                career: profileData.career,
+            })
+        });
+
+    updateUser({
+        id: data.user.id,
+        email: data.user.email,
+    });
+    // user = {
+    //     ...user,
+    //     id: data.user.id,
+    //     email: data.user.email,
+    // }
+    // notifyAll();
+}
 
 /**
  * 
@@ -40,13 +81,26 @@ export async function register(email, password) {
         throw error;
     }
 
+    try {
+        await createUserProfile({
+            id: data.user.id,
+            email,
+        });
+    } catch (errorProfile) {
+        throw errorProfile;
+    }
+
     // Guardamos los datos del usuario autenticado y notificamos a los observers del cambio.
-    user = {
-        ...user,
+    updateUser({
         id: data.user.id,
         email: data.user.email,
-    }
-    notifyAll();
+    });
+    // user = {
+    //     ...user,
+    //     id: data.user.id,
+    //     email: data.user.email,
+    // }
+    // notifyAll();
     // console.log("Usuario registrado: ", data);
 }
 
@@ -63,12 +117,16 @@ export async function login(email, password) {
     }
 
     // Guardamos los datos del usuario autenticado y notificamos a los observers del cambio.
-    user = {
-        ...user,
+    updateUser({
         id: data.user.id,
         email: data.user.email,
-    }
-    notifyAll();
+    });
+    // user = {
+    //     ...user,
+    //     id: data.user.id,
+    //     email: data.user.email,
+    // }
+    // notifyAll();
 
     // console.log("Usuario autenticado: ", data);
     return data.user;
@@ -78,12 +136,16 @@ export async function logout() {
     supabase.auth.signOut();
 
     // Vaciamos los datos del usuario y notificamos a los observers del cambio.
-    user = {
-        ...user,
-        id: null,
+    updateUser({
+        id: null, 
         email: null,
-    }
-    notifyAll();
+    });
+    // user = {
+    //     ...user,
+    //     id: null,
+    //     email: null,
+    // }
+    // notifyAll();
 }
 
 /*----------------------------------------------------------------------
@@ -119,4 +181,16 @@ function notify(callback) {
 function notifyAll() {
     observers.forEach(callback => notify(callback));
     // observers.forEach(notify);
+}
+
+/**
+ * 
+ * @param {{id?: string|null, email?: string|null}} data 
+ */
+function updateUser(data) {
+    user = {
+        ...user,
+        ...data,
+    }
+    notifyAll();
 }
