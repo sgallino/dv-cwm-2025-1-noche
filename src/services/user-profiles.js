@@ -35,7 +35,7 @@ export async function updateUserProfile(id, data) {
 /**
  * 
  * @param {string} id 
- * @returns {{id: string, email: string, bio: string|null, career: string|null, display_name: string|null}}
+ * @returns {Promise<{id: string, email: string, bio: string|null, career: string|null, display_name: string|null}>}
  */
 export async function getUserProfileById(id) {
     const { data, error } = await supabase

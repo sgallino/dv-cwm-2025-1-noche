@@ -2,10 +2,14 @@
 import { nextTick } from 'vue';
 import MainH1 from '../components/MainH1.vue';
 import { loadLastGlobalChatMessages, saveGlobalChatMessage, subscribeToGlobalChatNewMessages } from '../services/global-chat';
+import { subscribeToUserState } from '../services/auth';
+import MainLoader from '../components/MainLoader.vue';
+
+let unsubAuth = () => {};
 
 export default {
     name: 'GlobalChat',
-    components: { MainH1 },
+    components: { MainH1, MainLoader },
     // La propiedad "data" nos permite definir cuáles son los valores del "state" del componente.
     // Entiéndase por "state" los datos propios del componente que pueden variar duranta la vida del mismo.
     // Esta propiedad debe tener una función que retorne un objeto con los datos.
@@ -18,24 +22,36 @@ export default {
     data() {
         return {
             messages: [],
+            loadingMessages: true,
+
             newMessage: {
-                email: '',
                 body: '',
             },
+
+            user:{
+                id: null,
+                email: null,
+                bio: null,
+                career: null,
+                display_name: null,
+            }
         }
     },
     // La propiedad "methods" permite definir las funciones que queremos que el componente tenga.
     methods: {
         async sendMessage() {
             await saveGlobalChatMessage({
-                email: this.newMessage.email,
                 body: this.newMessage.body,
+                user_id: this.user.id,
+                email: this.user.email,
             });
             
             this.newMessage.body = "";
         }
     },
     async mounted() {
+        unsubAuth = subscribeToUserState(newUserData => this.user = newUserData);
+
         subscribeToGlobalChatNewMessages(async newMessageReceived => {
             this.messages.push(newMessageReceived);
             await nextTick();
@@ -46,6 +62,8 @@ export default {
         // Traemos los mensajes iniciales.
         try {
             this.messages = await loadLastGlobalChatMessages();
+            this.loadingMessages = false;
+
             // En this.$refs podemos acceder a todas las referencias de los elementos del DOM de nuestro template.
             // console.log("Contenedor del chat: ", this.$refs.chatContainer);
             // Agregamos el nextTick() para pedirle a Vue que espere al próximo frame de "redraw" (redibujado en el
@@ -71,6 +89,9 @@ export default {
         } catch (error) {
             // TODO: Manejar el error...
         }
+    },
+    unmounted() {
+        unsubAuth();
     }
 }
 </script>
@@ -85,7 +106,10 @@ export default {
         >
             <h2 class="sr-only">Lista de mensajes</h2>
 
-            <ul class="flex flex-col gap-4">
+            <ul 
+                v-if="!loadingMessages"
+                class="flex flex-col gap-4"
+            >
                 <!-- El prefijo "v-" indica que es una directiva. Una directa es una funcionalidad de Vue que extiende
                 el HTML.
                 El v-for repite la estructura de HTML por cada elemento del array que le pasamos.
@@ -103,11 +127,22 @@ export default {
                     :key="message.id"
                     class="flex flex-col gap-0.5"
                 >
-                    <div><b>{{ message.email }}</b> dijo:</div>
+                    <div>
+                        <RouterLink 
+                            :to="`/usuario/${message.user_id}`"
+                            class="font-bold text-blue-700 underline"
+                        >
+                            {{ message.email }}
+                        </RouterLink> 
+                        dijo:
+                    </div>
                     <div>{{ message.body }}</div>
                     <div class="text-sm text-gray-600">{{ message.created_at }}</div>
                 </li>
             </ul>
+            <div v-else class="flex justify-center items-center h-full">
+                <MainLoader />
+            </div>
         </section>
         <section class="w-3/12">
             <h2 class="text-2xl mb-4">Enviar un mensaje</h2>
@@ -126,7 +161,11 @@ export default {
                 @submit.prevent="() => sendMessage()"
             >
                 <div class="mb-4">
-                    <label for="email" class="block mb-2">Email</label>
+                    <div class="block mb-2">Email</div>
+                    <div class="font-bold">{{ user.email }}</div>
+                </div>
+                <div class="mb-4">
+                    <label for="body" class="block mb-2">Mensaje</label>
                     <!-- 
                     v-model es un shortcut que permite crear un "two-way data binding" entre un valor del state y un
                     control de formulario.
@@ -135,15 +174,6 @@ export default {
                     Dicho de otra forma, si cambio el valor del state, se actualiza el campo, y si cambio el valor del
                     campo, se actualiza el state.
                     -->
-                    <input
-                        type="email"
-                        id="email"
-                        class="w-full p-2 border border-gray-400 rounded"
-                        v-model="newMessage.email"
-                    >
-                </div>
-                <div class="mb-4">
-                    <label for="body" class="block mb-2">Mensaje</label>
                     <textarea
                         id="body"
                         class="w-full p-2 border border-gray-400 rounded"

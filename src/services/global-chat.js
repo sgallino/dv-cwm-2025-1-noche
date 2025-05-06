@@ -55,6 +55,7 @@ export async function saveGlobalChatMessage(data) {
         // Luego, le vamos a indicar la acción que queremos realizar. En este caso, queremos insertar un registro,
         // así que usamos insert().
         .insert({
+            user_id: data.user_id,
             email: data.email,
             body: data.body,
         });

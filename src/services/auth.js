@@ -1,5 +1,5 @@
 import supabase from "./supabase";
-import { createUserProfile, getUserProfileById } from "./user-profiles";
+import { createUserProfile, getUserProfileById, updateUserProfile } from "./user-profiles";
 
 /*
     Para manejar la comunicación del estado de autenticación entre todos los elementos del sistema (componentes, módulos,
@@ -38,30 +38,33 @@ async function loadInitialUserState() {
 
     if(!data.user) return;
 
-    // Hay un usuario autenticado, así que dejamos pidiendo que se traigan los datos faltantes.
-    // Importante: Noten que NO pusimos el await. Dejamos que corra en paralelo.
-    // TODO: Agregar esto al login, y hacer el editar perfil.
-    getUserProfileById(data.user.id)
-        .then(profileData => {
-            // console.log("Data de perfil: ", profileData);
-            
-            updateUser({
-                display_name: profileData.display_name,
-                bio: profileData.bio,
-                career: profileData.career,
-            })
-        });
-
     updateUser({
         id: data.user.id,
         email: data.user.email,
     });
-    // user = {
-    //     ...user,
-    //     id: data.user.id,
-    //     email: data.user.email,
-    // }
-    // notifyAll();
+
+    // Hay un usuario autenticado, así que dejamos pidiendo que se traigan los datos faltantes.
+    // Importante: Noten que NO pusimos el await. Dejamos que corra en paralelo.
+    // TODO: Hacer el editar perfil.
+    loadUserExtendedProfile();
+}
+
+/**
+ * Carga el perfil extendido del usuario.
+ */
+async function loadUserExtendedProfile() {
+    try {
+        const profileData = await getUserProfileById(user.id);
+        
+        updateUser({
+            display_name: profileData.display_name,
+            bio: profileData.bio,
+            career: profileData.career,
+        });   
+    } catch (error) {
+        console.error('[auth.js loadUserExtendedProfile] Error al traer el perfil extendido del usuario: ', error);
+        throw error;
+    }
 }
 
 /**
@@ -95,13 +98,6 @@ export async function register(email, password) {
         id: data.user.id,
         email: data.user.email,
     });
-    // user = {
-    //     ...user,
-    //     id: data.user.id,
-    //     email: data.user.email,
-    // }
-    // notifyAll();
-    // console.log("Usuario registrado: ", data);
 }
 
 export async function login(email, password) {
@@ -121,14 +117,9 @@ export async function login(email, password) {
         id: data.user.id,
         email: data.user.email,
     });
-    // user = {
-    //     ...user,
-    //     id: data.user.id,
-    //     email: data.user.email,
-    // }
-    // notifyAll();
+    
+    loadUserExtendedProfile();
 
-    // console.log("Usuario autenticado: ", data);
     return data.user;
 }
 
@@ -140,12 +131,21 @@ export async function logout() {
         id: null, 
         email: null,
     });
-    // user = {
-    //     ...user,
-    //     id: null,
-    //     email: null,
-    // }
-    // notifyAll();
+}
+
+/**
+ * 
+ * @param {{bio: string|null, career: string|null, display_name: string|null}} data 
+ */
+export async function updateAuthUserProfile(data) {
+    try {
+        await updateUserProfile(user.id, data);
+
+        updateUser(data);
+    } catch (error) {
+        console.error('[auth.js updateAuthUserProfile] Error al actualizar el perfil del usuario autenticado: ', error);
+        throw error;
+    }
 }
 
 /*----------------------------------------------------------------------
@@ -154,6 +154,7 @@ export async function logout() {
 /**
  * Suscribe un observer que se va a ejecutar cada vez que los datos del usuario autenticado cambien.
  * El observer debe ser una función ("callback") que va a recibir como argumento el objeto con los datos del usuario.
+ * Retorna una nueva función que permite cancelar la suscripción.
  * 
  * @param {({id: string|null, email: string|null}) => void} callback 
  */
@@ -161,8 +162,16 @@ export function subscribeToUserState(callback) {
     // Agregamos el callback al stack de observers.
     observers.push(callback);
 
+    // console.log("[Observer auth] Se agregó un nuevo observer. El stack actualizado es: ", observers);
+
     // Ejecutamos el callback para pasarle los datos actuales.
     notify(callback);
+
+    // Retornamos una nueva función que elimina el callback de la lista de observers.
+    return () => {
+        observers = observers.filter(obs => obs !== callback);
+        // console.log("[Observer auth] Se removió un observer. El stack actualizado es: ", observers);
+    };
 }
 
 /**
@@ -185,7 +194,7 @@ function notifyAll() {
 
 /**
  * 
- * @param {{id?: string|null, email?: string|null}} data 
+ * @param {{id?: string|null, email?: string|null, bio?: string|null, career?: string|null, display_name?: string|null}} data 
  */
 function updateUser(data) {
     user = {
