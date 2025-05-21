@@ -1,6 +1,16 @@
 import supabase from "./supabase";
 
-// TODO: Optimización de performance para reducir la cantidad de peticiones (uso de caché). RLS.
+// TODO: RLS.
+
+// Cacheamos los ids de los chats privados, para evitar tener que buscarlos múltiples veces.
+// La forma en que lo vamos a hacer es crear un objeto que va a guardar esos ids, asignando como claves de las propiedades
+// un string conformado como "userId1_userId2".
+let privateChatIdsCache = {};
+
+// Levantamos del caché los ids que tengamos almacenados.
+if(localStorage.getItem('privateChatIds')) {
+    privateChatIdsCache = JSON.parse(localStorage.getItem('privateChatIds'));
+}
 
 /**
  * 
@@ -9,11 +19,19 @@ import supabase from "./supabase";
  * @returns {Promise<number>}
  */
 async function getPrivateChat(sender_id, receiver_id) {
+    // Primero preguntamos si tenemos este id en el caché.
+    const cacheKey = [sender_id, receiver_id].sort().join('_');
+    if(privateChatIdsCache[cacheKey]) return privateChatIdsCache[cacheKey];
+
     let chat_id = await fetchPrivateChat(sender_id, receiver_id);
 
     if(!chat_id) {
-        return await createPrivateChat(sender_id, receiver_id);
+        chat_id = await createPrivateChat(sender_id, receiver_id);
     }
+
+    // Guardamos el id en el caché.
+    privateChatIdsCache[cacheKey] = chat_id;
+    localStorage.setItem('privateChatIds', JSON.stringify(privateChatIdsCache));
 
     return chat_id;
 }
