@@ -1,43 +1,52 @@
-<script>
-// Acá va la lógica del componente.
-// En los componentes que usan la Options API, debemos exportar como default un objeto con la configuración del componente.
-// Si queremos usar otros componentes, es necesario importarlos.
-// En la Options API, es necesario también declarar los componentes que vamos a usar.
-// Una vez importado correctamente, podemos usarlo en el template con la sintaxis <Componente></Componente> o
-// <Componente />.
-// import Home from './pages/Home.vue';
+<script setup>
+import { useRouter } from 'vue-router';
+import { logout } from './services/auth';
+import useAuthUserState from './composables/useAuthUserState';
 
-import { logout, subscribeToUserState } from './services/auth';
+const router = useRouter();
+const { user } = useAuthUserState();
+const { handleLogout } = useLogout(router);
 
-export default {
-    // El "name" define el nombre del componente. Es opcional.
-    // Se supone que sea igual que el nombre del archivo.
-    name: 'App',
-    // "components" recibe un objeto donde define los componentes que se van a usar en el <template>.
-    // components: { Home },
-    data() {
-        return {
-            user: {
-                id: null,
-                email: null,
-            },
-        }
-    },
-    methods: {
-        handleLogout() {
-            logout();
+function useLogout(router) {
+    function handleLogout() {
+        logout();
+        router.push('/ingresar');
+    }
 
-            // Redireccionamos al form de login.
-            // Para redireccionar programáticamente, podemos usar el método push() del objeto Router.
-            // Al objeto Router, por su parte, lo podemos acceder usando this.$router .
-            this.$router.push('/ingresar');
-        }
-    },
-    mounted() {
-        // Nos suscribimos al estado de autenticación.
-        subscribeToUserState(newUserState => this.user = newUserState);
+    return {
+        handleLogout,
     }
 }
+
+// export default {
+//     // El "name" define el nombre del componente. Es opcional.
+//     // Se supone que sea igual que el nombre del archivo.
+//     name: 'App',
+//     // "components" recibe un objeto donde define los componentes que se van a usar en el <template>.
+//     // components: { Home },
+//     data() {
+//         return {
+//             user: {
+//                 id: null,
+//                 email: null,
+//             },
+//         }
+//     },
+//     methods: {
+//         handleLogout() {
+//             logout();
+
+//             // Redireccionamos al form de login.
+//             // Para redireccionar programáticamente, podemos usar el método push() del objeto Router.
+//             // Al objeto Router, por su parte, lo podemos acceder usando this.$router .
+//             this.$router.push('/ingresar');
+//         }
+//     },
+//     mounted() {
+//         // Nos suscribimos al estado de autenticación.
+//         subscribeToUserState(newUserState => this.user = newUserState);
+//     }
+// }
 </script>
 
 <template>

@@ -1,30 +1,30 @@
-<script>
+<script setup>
 import MainH1 from '../components/MainH1.vue';
-import { subscribeToUserState } from '../services/auth';
+import useAuthUserState from '../composables/useAuthUserState';
 
-let unsubAuth = () => {};
+const { user } = useAuthUserState();
 
-export default {
-    name: 'MyProfile',
-    components: { MainH1, },
-    data() {
-        return {
-            user: {
-                id: null,
-                email: null,
-                display_name: null,
-                bio: null,
-                career: null,
-            },
-        }
-    },
-    mounted() {
-        unsubAuth = subscribeToUserState(newUserState => this.user = newUserState);
-    },
-    unmounted() {
-        unsubAuth();
-    }
-}
+// export default {
+//     name: 'MyProfile',
+//     components: { MainH1, },
+//     data() {
+//         return {
+//             user: {
+//                 id: null,
+//                 email: null,
+//                 display_name: null,
+//                 bio: null,
+//                 career: null,
+//             },
+//         }
+//     },
+//     mounted() {
+//         unsubAuth = subscribeToUserState(newUserState => this.user = newUserState);
+//     },
+//     unmounted() {
+//         unsubAuth();
+//     }
+// }
 </script>
 
 <template>

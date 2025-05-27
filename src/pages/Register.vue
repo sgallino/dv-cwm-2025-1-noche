@@ -1,8 +1,35 @@
-<script>
+<script setup>
+import { ref } from 'vue';
 import MainH1 from '../components/MainH1.vue';
 import { register } from '../services/auth';
 
-export default {
+const { user, loading, handleSubmit } = useRegisterForm();
+
+function useRegisterForm() {
+    const user = ref({
+        email: '',
+        password: '',
+    });
+    const loading = ref(false);
+
+    async function handleSubmit() {
+        try {
+            loading.value = true;
+            await register(user.value.email, user.value.password);
+        } catch (error) {
+            // TODO: Manejar el error.
+        }
+        loading.value = false;
+    }
+
+    return {
+        user,
+        loading,
+        handleSubmit,
+    }
+}
+
+/*export default {
     name: 'Register',
     components: { MainH1 },
     data() {
@@ -19,13 +46,13 @@ export default {
             try {
                 this.loading = true;
                 await register(this.user.email, this.user.password);
-                this.loading = false;
             } catch (error) {
                 // TODO: Manejar el error.
             }
+            this.loading = false;
         },
     }
-}
+}*/
 </script>
 
 <template>

@@ -44,7 +44,7 @@ export async function loadLastGlobalChatMessages() {
 /**
  * Graba un nuevo mensaje de chat.
  * 
- * @param {{email: string, body: string}} data 
+ * @param {{user_id: string, email: string, body: string}} data 
  * @returns {Promise}
  */
 export async function saveGlobalChatMessage(data) {

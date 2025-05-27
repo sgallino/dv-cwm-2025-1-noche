@@ -1,13 +1,79 @@
-<script>
-import { nextTick } from 'vue';
+<script setup>
+import { nextTick, onMounted, ref, useTemplateRef } from 'vue';
 import MainH1 from '../components/MainH1.vue';
 import { loadLastGlobalChatMessages, saveGlobalChatMessage, subscribeToGlobalChatNewMessages } from '../services/global-chat';
-import { subscribeToUserState } from '../services/auth';
 import MainLoader from '../components/MainLoader.vue';
+import useAuthUserState from '../composables/useAuthUserState';
+import useScrollToBottom from '../composables/useScrollToBottom';
 
-let unsubAuth = () => {};
+const { user } = useAuthUserState();
+const { messages, loadingMessages } = useGlobalChatMessages();
+const { newMessage, sendMessage } = useGlobalChatForm(user);
 
-export default {
+function useGlobalChatMessages() {
+    const messages = ref([]);
+    const loadingMessages = ref(true);
+    const { moveScrollToBottom } = useScrollToBottom('chatContainer');
+    // const chatContainer = useTemplateRef('chatContainer');
+
+    // async function moveScrollToBottom() {
+    //     await nextTick();
+    //     chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+    // }
+
+    onMounted(async () => {
+        try {
+            messages.value = await loadLastGlobalChatMessages();
+            loadingMessages.value = false;
+
+            subscribeToGlobalChatNewMessages(async newMessage => {
+                messages.value.push(newMessage);
+                
+                moveScrollToBottom();
+                // await nextTick();
+                // chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+            });
+
+            moveScrollToBottom();
+            // await nextTick();
+            // chatContainer.value.scrollTop = chatContainer.value.scrollHeight;
+        } catch (error) {
+            // TODO...
+        }
+    });
+
+    return {
+        messages, 
+        loadingMessages,
+    }
+}
+
+function useGlobalChatForm(user) {
+    const newMessage = ref({
+        body: '',
+    });
+
+    async function sendMessage() {
+        try {
+            await saveGlobalChatMessage({
+                user_id: user.value.id,
+                email: user.value.email,
+                body: newMessage.value.body,
+            });
+            newMessage.value.body = '';
+        } catch (error) {
+            console.error(error);
+            
+        }
+    }
+
+    return {
+        newMessage,
+        sendMessage,
+    }
+}
+
+/*export default {
     name: 'GlobalChat',
     components: { MainH1, MainLoader },
     // La propiedad "data" nos permite definir cuáles son los valores del "state" del componente.
@@ -28,7 +94,7 @@ export default {
                 body: '',
             },
 
-            user:{
+            user: {
                 id: null,
                 email: null,
                 bio: null,
@@ -93,7 +159,7 @@ export default {
     unmounted() {
         unsubAuth();
     }
-}
+}*/
 </script>
 
 <template>
