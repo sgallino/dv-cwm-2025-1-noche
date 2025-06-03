@@ -1,9 +1,8 @@
 <script setup>
-import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import MainH1 from '../components/MainH1.vue';
 import MainLoader from '../components/MainLoader.vue';
-import { getUserProfileById } from '../services/user-profiles';
+import useUserProfile from '../composables/useUserProfile';
 
 /*
 Si necesitamos usar datos del Router o el Route, que antes obteníamos como this.$router y this.$route, respectivamente,
@@ -11,41 +10,6 @@ tenemos que usar los "composables" que vue-router nos ofrece: useRouter() y useR
 */
 const route = useRoute();
 const { user, loading } = useUserProfile(route.params.id);
-
-/**
- * 
- * @param id {string}
- */
-function useUserProfile(id) {
-    const user = ref({
-        id: null,
-        email: null,
-        bio: null,
-        display_name: null,
-        career: null,
-    });
-    const loading = ref(false);
-
-    /*
-    Para acceder a los "hooks" del ciclo de vida de Vue (como mounted o unmounted) podemos utilizar las funciones que se 
-    llaman de la misma forma, pero con el prefijo "on". Por ejemplo, onMounted().
-    El código que queremos asociar lo pasamos dentro de un closure como argumento de la función.
-    */
-    onMounted(async () => {
-        try {
-            loading.value = true;
-            user.value = await getUserProfileById(id);
-            loading.value = false;
-        } catch (error) {
-            // TODO...
-        }
-    });
-
-    return {
-        user,
-        loading,
-    }
-}
 
 /*export default {
     name: 'UserProfile',

@@ -3,8 +3,6 @@ import { subscribeToUserState } from "../services/auth";
 
 /**
  * Obtiene los datos del usuario autenticado (o no autenticado).
- * 
- * @returns {{id: null|string, email: null|string, bio: null|string, display_name: null|string, career: null|string}}
  */
 export default function useAuthUserState() {
     let unsubAuth = () => {};

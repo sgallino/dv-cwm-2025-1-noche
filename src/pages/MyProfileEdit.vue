@@ -1,76 +1,64 @@
-<script>
+<script setup>
+import { onMounted, ref } from 'vue';
 import MainButton from '../components/MainButton.vue';
 import MainH1 from '../components/MainH1.vue';
 import MainLoader from '../components/MainLoader.vue';
-import { subscribeToUserState, updateAuthUserProfile } from '../services/auth';
+import useAuthUserState from '../composables/useAuthUserState';
+import { updateAuthUserProfile } from '../services/auth';
 
-// Variable para guardar la función de cancelar la suscripción a la autenticación.
-let unsubAuth = () => {}
+const { user } = useAuthUserState();
+const { profile, updating, feedback, handleSubmit } = useProfileEditForm(user);
 
-export default {
-    name: 'MyProfileEdit',
-    components: { MainH1, MainLoader, MainButton },
-    data() {
-        return {
-            user: {
-                id: null,
-                email: null,
-                display_name: null,
-                bio: null,
-                career: null,
-            },
-            profile: {
-                display_name: null,
-                bio: null,
-                career: null,
-            },
-            updating: false,
+function useProfileEditForm(user) {
+    const profile = ref({
+        display_name: '',
+        bio: '',
+        career: '',
+    });
+    const updating = ref(false);
+    const feedback = ref({
+        type: 'success',
+        message: null,
+    });
 
-            feedback: {
+    async function handleSubmit() {
+        feedback.message = null;
+
+        try {
+            // Si ya estamos actualizando, entonces no repetimos la acción.
+            if(updating.value) return;
+
+            updating.value = true;
+            await updateAuthUserProfile({
+                ...profile.value,
+            });
+
+            feedback.value = {
                 type: 'success',
-                message: null,
+                message: 'Tu perfil se actualizó con éxito.'
+            }
+        } catch (error) {
+            feedback.value = {
+                type: 'error',
+                message: 'Ocurrió un error al actualizar el perfil.',
             }
         }
-    },
-    methods: {
-        async handleSubmit() {
-            // Limpiamos el mensaje de feedback.
-            this.feedback.message = null;
+        updating.value = false;
+    }
 
-            try {
-                this.updating = true;
-                await updateAuthUserProfile({
-                    ...this.profile
-                });
-                this.updating = false;
-
-                this.feedback = {
-                    type: 'success',
-                    message: 'Tu perfil se actualizó con éxito.',
-                }
-            } catch (error) {
-                this.feedback = {
-                    type: 'error',
-                    message: 'Ocurrió un error al actualizar el perfil.',
-                }
-            }
+    onMounted(() => {
+        profile.value = {
+            bio: user.value.bio,
+            display_name: user.value.display_name,
+            career: user.value.career,
         }
-    },
-    mounted() {
-        unsubAuth = subscribeToUserState(newUserState => {
-            this.user = newUserState;
+    });
 
-            // Cargamos los datos iniciales del form.
-            this.profile = {
-                bio: this.user.bio,
-                display_name: this.user.display_name,
-                career: this.user.career,
-            }
-        });
-    },
-    unmounted() {
-        // Cancelamos la suscripción.
-        unsubAuth();
+    return {
+        profile,
+        updating,
+        feedback,
+        handleSubmit,
     }
 }
 </script>

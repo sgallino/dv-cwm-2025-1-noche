@@ -5,6 +5,7 @@ import { loadLastGlobalChatMessages, saveGlobalChatMessage, subscribeToGlobalCha
 import MainLoader from '../components/MainLoader.vue';
 import useAuthUserState from '../composables/useAuthUserState';
 import useScrollToBottom from '../composables/useScrollToBottom';
+import MainButton from '../components/MainButton.vue';
 
 const { user } = useAuthUserState();
 const { messages, loadingMessages } = useGlobalChatMessages();
@@ -246,7 +247,7 @@ function useGlobalChatForm(user) {
                         v-model="newMessage.body"
                     ></textarea>
                 </div>
-                <button type="submit" class="transition px-4 py-2 rounded bg-blue-600 hover:bg-blue-500 focus:bg-blue-500 active:bg-blue-700 text-white">Enviar</button>
+                <MainButton type="submit" button-style="secondary" />
             </form>
         </section>
     </div>

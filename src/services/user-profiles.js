@@ -38,6 +38,7 @@ export async function updateUserProfile(id, data) {
  * @returns {Promise<{id: string, email: string, bio: string|null, career: string|null, display_name: string|null}>}
  */
 export async function getUserProfileById(id) {
+    // console.log('Empezando a buscar el perfil del usuario para ', id);
     const { data, error } = await supabase
         .from('user_profiles')
         .select()
@@ -47,6 +48,8 @@ export async function getUserProfileById(id) {
         console.error('[user-profiles.js getUserProfileById] Error al traer el perfil del usuario: ', error);
         throw error;
     }
+
+    // console.log('Perfil del usuario obtenido: ', data[0]);
 
     // Como solo puede llegar una fila (filtramos por la PK), entonces hard-codeamos que queremos el primer (y único) registro.
     return data[0];

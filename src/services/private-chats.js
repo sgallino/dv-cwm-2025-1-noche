@@ -144,7 +144,8 @@ export async function subscribeToPrivateChatNewMessages(sender_id, receiver_id, 
  * @param {string} receiver_id 
  * @returns {Promise<{id: number, chat_id: number, sender_id: string, body: string, created_at: string}[]>}
  */
-export async function getLastPrivateChatMessages(sender_id, receiver_id) {
+export async function fetchLastPrivateChatMessages(sender_id, receiver_id) {
+    // console.log("Empezando a buscar el chat privado de: ", sender_id, receiver_id);
     const chat_id = await getPrivateChat(sender_id, receiver_id);
 
     const { data, error } = await supabase
