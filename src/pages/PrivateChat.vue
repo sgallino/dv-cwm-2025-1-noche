@@ -36,28 +36,28 @@ function usePrivateChatMessages(userAuth, userChat) {
             // TODO...
         }
         loading.value = false;
-
-        // Si queremos asegurarnos de que solo se ejecute el código cuando se haya cargado el id del usuario, podemos
-        // esperarlo con un watch().
-        // watch(userChat, async (newUserChat, oldUserChat) => {
-        //     if(newUserChat.id != null) {
-        //         try {
-        //             loading.value = true;
-        //             messages.value = await fetchLastPrivateChatMessages(userAuth.value.id, userChat.value.id);
-        //             loading.value = false;
-        //             moveScrollToBottom();
-
-        //             subscribeToPrivateChatNewMessages(userAuth.value.id, userChat.value.id, newMessage => {
-        //                 messages.value.push(newMessage);
-        //                 moveScrollToBottom();
-        //             });
-        //         } catch (error) {
-        //             // TODO...
-        //         }
-        //         loading.value = false;
-        //     }
-        // });
     });
+    
+    // Si queremos asegurarnos de que solo se ejecute el código cuando se haya cargado el id del usuario, podemos
+    // esperarlo con un watch().
+    // watch(userChat, async (newUserChat, oldUserChat) => {
+    //     if(newUserChat.id != null) {
+    //         try {
+    //             loading.value = true;
+    //             messages.value = await fetchLastPrivateChatMessages(userAuth.value.id, userChat.value.id);
+    //             loading.value = false;
+    //             moveScrollToBottom();
+
+    //             subscribeToPrivateChatNewMessages(userAuth.value.id, userChat.value.id, newMessage => {
+    //                 messages.value.push(newMessage);
+    //                 moveScrollToBottom();
+    //             });
+    //         } catch (error) {
+    //             // TODO...
+    //         }
+    //         loading.value = false;
+    //     }
+    // });
 
     return {
         messages,

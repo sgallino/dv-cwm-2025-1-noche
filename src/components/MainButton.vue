@@ -1,10 +1,10 @@
 <script setup>
+import { computed } from 'vue';
+
 // En la Composition API, si queremos indicar que este componente acepta propiedades, podemos hacerlo usando la "macro"
 // defineProps().
 // ¿Qué es una macro?
 // Las macros no son funciones normales (por eso es que no hacemos un import de ellas), sino que son indicaciones para
-
-import { computed } from 'vue';
 
 // el compilador de Vue sobre transformaciones que debe realizar.
 const props = defineProps({
