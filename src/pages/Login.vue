@@ -2,6 +2,10 @@
 import { ref } from 'vue';
 import MainH1 from '../components/MainH1.vue';
 import { login } from '../services/auth';
+import MainButton from '../components/MainButton.vue';
+import { useRouter } from 'vue-router';
+
+const router = useRouter();
 
 // En la Composition API, la forma recomendada de trabajo es encapsular cada responsabilidad lógica de nuestro
 // componente en una función, que luego invocamos.
@@ -16,14 +20,14 @@ import { login } from '../services/auth';
 //  responsabilidad. Esto hace que sea muy sencillo entender qué responsabilidades abarca el componente.
 // - Si luego ocurre que necesitamos usar esta misma lógica en otro componente, se vuelve una trivial extraer la función
 //  a un archivo externo que la exporte, y luego importarla en todos los componentes que la necesiten.
-const { user, loading, handleSubmit } = useLoginForm();
+const { user, loading, handleSubmit } = useLoginForm(router);
 
 // Para crear variables "reactivas" (como las del "data()" de la Options API) podemos que usar la función ref().
 // Esta función recibe un valor cualquiera (string, number, object, array, etc) y nos retorna un objeto que envuelve
 // a ese valor en su propiedad "value".
 // Pueden tener tantos refs como quieran. Una buena guía de base es que cada propiedad que tendrían en el data() sería
 // su propio ref.
-function useLoginForm() {
+function useLoginForm(router) {
     const user = ref({
         email: '',
         password: '',
@@ -37,6 +41,8 @@ function useLoginForm() {
             // Pueden pensarlo como la versión en la Composition API del "this." de las propiedades de la Options API.
             loading.value = true;
             await login(user.value.email, user.value.password);
+
+            router.push('/mi-perfil');
         } catch (error) {
             // TODO: Manejar
         }
@@ -105,6 +111,11 @@ function useLoginForm() {
                 v-model="user.password"
             >
         </div>
-        <button type="submit" class="transition px-4 py-2 rounded bg-blue-600 hover:bg-blue-500 focus:bg-blue-500 active:bg-blue-700 text-white">Ingresar</button>
+        <MainButton
+            :loading="loading"
+            type="submit"
+        >
+            Ingresar
+        </MainButton>
     </form>
 </template>

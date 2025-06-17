@@ -2,10 +2,14 @@
 import { ref } from 'vue';
 import MainH1 from '../components/MainH1.vue';
 import { register } from '../services/auth';
+import MainButton from '../components/MainButton.vue';
+import { useRouter } from 'vue-router';
 
-const { user, loading, handleSubmit } = useRegisterForm();
+const router = useRouter();
 
-function useRegisterForm() {
+const { user, loading, handleSubmit } = useRegisterForm(router);
+
+function useRegisterForm(router) {
     const user = ref({
         email: '',
         password: '',
@@ -16,6 +20,8 @@ function useRegisterForm() {
         try {
             loading.value = true;
             await register(user.value.email, user.value.password);
+
+            router.push('/mi-perfil');
         } catch (error) {
             // TODO: Manejar el error.
         }
@@ -28,31 +34,6 @@ function useRegisterForm() {
         handleSubmit,
     }
 }
-
-/*export default {
-    name: 'Register',
-    components: { MainH1 },
-    data() {
-        return {
-            user: {
-                email: '',
-                password: '',
-            },
-            loading: false,
-        }
-    },
-    methods: {
-        async handleSubmit() {
-            try {
-                this.loading = true;
-                await register(this.user.email, this.user.password);
-            } catch (error) {
-                // TODO: Manejar el error.
-            }
-            this.loading = false;
-        },
-    }
-}*/
 </script>
 
 <template>
@@ -80,6 +61,11 @@ function useRegisterForm() {
                 v-model="user.password"
             >
         </div>
-        <button type="submit" class="transition px-4 py-2 rounded bg-blue-600 hover:bg-blue-500 focus:bg-blue-500 active:bg-blue-700 text-white">Crear cuenta</button>
+        <MainButton
+            :loading="loading" 
+            type="submit"
+        >
+            Crear cuenta
+        </MainButton>
     </form>
 </template>

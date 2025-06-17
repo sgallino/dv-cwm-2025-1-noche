@@ -1,4 +1,5 @@
-import { getFileURL, uploadFile } from "./storage";
+import { getExtensionFromFile } from "../libraries/helpers";
+import { deleteFile, getFileURL, uploadFile } from "./storage";
 import supabase from "./supabase";
 import { createUserProfile, getUserProfileById, updateUserProfile } from "./user-profiles";
 
@@ -68,6 +69,7 @@ async function loadUserExtendedProfile() {
             display_name: profileData.display_name,
             bio: profileData.bio,
             career: profileData.career,
+            photo: profileData.photo,
         });   
     } catch (error) {
         console.error('[auth.js loadUserExtendedProfile] Error al traer el perfil extendido del usuario: ', error);
@@ -166,10 +168,13 @@ export async function updateAuthUserProfile(data) {
  */
 export async function updateAuthUserAvatar(file) {
     try {
+        // Guardamos el nombre de la foto actual del perfil, para poder eliminarla luego.
+        const oldProfilePhoto = user.photo;
+
         // El formato del nombre para el avatar que queremos es:
         //  userId/filename.extension
         // Para el filename vamos a crear un UUID nuevo.
-        const filename = `${user.id}/${crypto.randomUUID()}.jpg`; // TODO: Extensiones.
+        const filename = `${user.id}/${crypto.randomUUID()}.${getExtensionFromFile(file)}`;
 
         await uploadFile(filename, file);
 
@@ -177,6 +182,13 @@ export async function updateAuthUserAvatar(file) {
         await updateAuthUserProfile({
             photo: getFileURL(filename),
         });
+
+        // Si había una foto anterior, entonces la eliminamos.
+        if(oldProfilePhoto) {
+            // 9 => '/avatars/'.length
+            const photoToDelete = oldProfilePhoto.slice(oldProfilePhoto.indexOf('/avatars/') + 9);
+            deleteFile(photoToDelete);
+        }
     } catch (error) {
         throw error;
     }

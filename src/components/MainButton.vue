@@ -1,5 +1,6 @@
 <script setup>
 import { computed } from 'vue';
+import MainLoader from './MainLoader.vue';
 
 // En la Composition API, si queremos indicar que este componente acepta propiedades, podemos hacerlo usando la "macro"
 // defineProps().
@@ -11,6 +12,10 @@ const props = defineProps({
     buttonStyle: {
         type: String,
         default: 'primary',
+    },
+    loading: {
+        type: Boolean,
+        default: false,
     }
 });
 
@@ -40,5 +45,8 @@ const buttonColor = computed(() => {
 <template>
     <button
         :class="`transition px-4 py-2 rounded ${buttonColor} text-white`"
-    ><slot>Enviar</slot></button>
+    >
+        <slot v-if="!loading">Enviar</slot>
+        <MainLoader v-else />
+    </button>
 </template>

@@ -1,8 +1,9 @@
 <script setup>
-import { ref } from 'vue';
+import { onUnmounted, ref } from 'vue';
 import MainButton from '../components/MainButton.vue';
 import MainH1 from '../components/MainH1.vue';
 import { updateAuthUserAvatar } from '../services/auth';
+import MainLoader from '../components/MainLoader.vue';
 
 const { avatar, updating, handleSubmit, handleFileChange } = useAvatarUploadForm();
 
@@ -70,6 +71,8 @@ function useAvatarUploadForm() {
         avatar.value.objectURL = URL.createObjectURL(avatar.value.file);
     }
 
+    onUnmounted(() => avatar.value ? URL.revokeObjectURL(avatar.value) : '');
+
     return {
         avatar,
         updating,
@@ -93,7 +96,7 @@ function useAvatarUploadForm() {
                 <!-- 
                 En los inputs de tipo file no se puede usar el v-model.
                 Esto es porque el v-model crea un "two-way data binding". Es decir, que el valor de la referencia reactiva
-                de Vue se vuelve la "única fuente de vedad" (single source of truth). Vue automáticamente actualiza el
+                de Vue se vuelve la "única fuente de verdad" (single source of truth). Vue automáticamente actualiza el
                 contenido del control del formulario con el valor de la referencia, y si se cambia el valor del control,
                 entonces Vue actualiza la referencia.
                 Los inputs de tipo file *no pueden ser asignados un valor programáticamente*.
@@ -107,7 +110,12 @@ function useAvatarUploadForm() {
                     @change="handleFileChange"
                 >
             </div>
-            <MainButton>Subir imagen</MainButton>
+            <MainButton
+                :loading="updating"
+                type="submit"
+            >
+                Subir imagen
+            </MainButton>
         </div>
         <div class="w-1/2">
             <!-- Acá va el preview -->

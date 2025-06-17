@@ -26,6 +26,18 @@ export function getFileURL(filename, bucket = 'avatars') {
     return data.publicUrl;
 }
 
+/**
+ * 
+ * @param {string} filename 
+ * @param {string} bucket 
+ */
 export async function deleteFile(filename, bucket = 'avatars') {
-    // TODO: Implementar el eliminar de la imagen de perfil anterior.
+    const { data, error } = await supabase.storage.from(bucket).remove([filename]);
+    console.log("Imagen a eliminar: ", data);
+    
+    
+    if(error) {
+        console.error('[storage.js deleteFile] Error al eliminar el archivo: ', error);
+        throw error;
+    }
 }

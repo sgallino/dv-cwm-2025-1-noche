@@ -1,5 +1,6 @@
 <script setup>
 import MainH1 from '../components/MainH1.vue';
+import UserProfileData from '../components/UserProfileData.vue';
 import useAuthUserState from '../composables/useAuthUserState';
 
 const { user } = useAuthUserState();
@@ -34,7 +35,8 @@ const { user } = useAuthUserState();
         <RouterLink to="/mi-perfil/editar/avatar" class="mb-4 text-blue-700">Editar imagen</RouterLink>
     </div>
 
-    <div class="flex gap-4">
+    <UserProfileData :user="user" />
+    <!-- <div class="flex gap-4">
         <div class="w-2/6 p-4 bg-slate-200">
             <div
                 v-if="user.photo"
@@ -54,5 +56,5 @@ const { user } = useAuthUserState();
                 <dd class="mb-4">{{ user.career || 'Sin especificar' }}</dd>
             </dl>
         </div>
-    </div>
+    </div> -->
 </template>

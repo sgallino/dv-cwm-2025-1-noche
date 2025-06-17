@@ -3,6 +3,7 @@ import { useRoute } from 'vue-router';
 import MainH1 from '../components/MainH1.vue';
 import MainLoader from '../components/MainLoader.vue';
 import useUserProfile from '../composables/useUserProfile';
+import UserProfileData from '../components/UserProfileData.vue';
 
 /*
 Si necesitamos usar datos del Router o el Route, que antes obteníamos como this.$router y this.$route, respectivamente,
@@ -45,16 +46,7 @@ const { user, loading } = useUserProfile(route.params.id);
     <template v-if="!loading">
         <MainH1>Perfil de {{ user.email }}</MainH1>
 
-        <div class="ms-4 my-8 italic">{{ user.bio || 'Acá va mi biografía...' }}</div>
-
-        <dl class="mb-4">
-            <dt class="mb-0.5 font-bold">Email</dt>
-            <dd class="mb-4">{{ user.email }}</dd>
-            <dt class="mb-0.5 font-bold">Nombre de Usuario</dt>
-            <dd class="mb-4">{{ user.display_name || 'Sin especificar' }}</dd>
-            <dt class="mb-0.5 font-bold">Carrera</dt>
-            <dd class="mb-4">{{ user.career || 'Sin especificar' }}</dd>
-        </dl>
+        <UserProfileData :user="user" />
 
         <hr class="mb-4">
 
