@@ -13,6 +13,7 @@ export default function useUserProfile(id) {
         bio: null,
         display_name: null,
         career: null,
+        photo: null,
     });
     const loading = ref(false);
 

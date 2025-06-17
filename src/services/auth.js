@@ -1,3 +1,4 @@
+import { getFileURL, uploadFile } from "./storage";
 import supabase from "./supabase";
 import { createUserProfile, getUserProfileById, updateUserProfile } from "./user-profiles";
 
@@ -22,6 +23,7 @@ let user = {
     display_name: null,
     bio: null,
     career: null,
+    photo: null,
 }
 
 // Definimos un array para guardar la lista de observers que quieren ser notificados de los cambios en "user".
@@ -139,6 +141,7 @@ export async function logout() {
         bio: null,
         display_name: null,
         career: null,
+        photo: null,
     });
 }
 
@@ -153,6 +156,28 @@ export async function updateAuthUserProfile(data) {
         updateUser(data);
     } catch (error) {
         console.error('[auth.js updateAuthUserProfile] Error al actualizar el perfil del usuario autenticado: ', error);
+        throw error;
+    }
+}
+
+/**
+ * 
+ * @param {File} file 
+ */
+export async function updateAuthUserAvatar(file) {
+    try {
+        // El formato del nombre para el avatar que queremos es:
+        //  userId/filename.extension
+        // Para el filename vamos a crear un UUID nuevo.
+        const filename = `${user.id}/${crypto.randomUUID()}.jpg`; // TODO: Extensiones.
+
+        await uploadFile(filename, file);
+
+        // Actualizamos el perfil del usuario.
+        await updateAuthUserProfile({
+            photo: getFileURL(filename),
+        });
+    } catch (error) {
         throw error;
     }
 }
