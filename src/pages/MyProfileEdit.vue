@@ -5,6 +5,7 @@ import MainH1 from '../components/MainH1.vue';
 import MainLoader from '../components/MainLoader.vue';
 import useAuthUserState from '../composables/useAuthUserState';
 import { updateAuthUserProfile } from '../services/auth';
+import NotificationBox from '../components/NotificationBox.vue';
 
 const { user } = useAuthUserState();
 const { profile, updating, feedback, handleSubmit } = useProfileEditForm(user);
@@ -19,10 +20,12 @@ function useProfileEditForm(user) {
     const feedback = ref({
         type: 'success',
         message: null,
+        title: null,
+        closable: true,
     });
 
     async function handleSubmit() {
-        feedback.message = null;
+        feedback.value.message = null;
 
         try {
             // Si ya estamos actualizando, entonces no repetimos la acción.
@@ -34,12 +37,16 @@ function useProfileEditForm(user) {
             });
 
             feedback.value = {
+                ...feedback.value,
                 type: 'success',
+                title: 'Éxito',
                 message: 'Tu perfil se actualizó con éxito.'
             }
         } catch (error) {
             feedback.value = {
+                ...feedback.value,
                 type: 'error',
+                title: 'Error',
                 message: 'Ocurrió un error al actualizar el perfil.',
             }
         }
@@ -66,16 +73,20 @@ function useProfileEditForm(user) {
 <template>
     <MainH1>Editar mi perfil</MainH1>
 
-    <div
+    <NotificationBox
         v-if="feedback.message != null"
-        class="p-4 mb-4 rounded"
-        :class="{
-            'bg-red-100 text-red-700': feedback.type === 'error',
-            'bg-green-100 text-green-700': feedback.type === 'success',
-        }"
+        :content="feedback"
+        @close="() => feedback.message = null"
     >
+        <template
+            v-if="feedback.title"
+            v-slot:header
+        >
+            <h2 class="text-xl pb-2 mb-4 border-b">{{ feedback.title }}</h2>
+        </template>
+
         {{ feedback.message }}
-    </div>
+    </NotificationBox>
 
     <form 
         action="#"

@@ -17,7 +17,7 @@ const photoSrc = computed(() => props.user.photo || NoImage);
 
 <template>
     <div class="flex gap-4">
-        <div class="w-2/6 p-4 bg-slate-200">
+        <div class="w-3/12 p-4 bg-slate-200">
             <div
                 class="mb-4"
             >
@@ -25,7 +25,7 @@ const photoSrc = computed(() => props.user.photo || NoImage);
             </div>
             <div class="ms-4 my-8 italic">{{ user.bio || 'Acá va mi biografía...' }}</div>
         </div>
-        <div class="w-4/6 p-4">
+        <div class="w-9/12 p-4">
             <dl>
                 <dt class="mb-0.5 font-bold">Email</dt>
                 <dd class="mb-4">{{ user.email }}</dd>

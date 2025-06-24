@@ -1,11 +1,11 @@
 <script setup>
 import { onUnmounted, ref } from 'vue';
+import { updateAuthUserAvatar } from '../services/auth';
 import MainButton from '../components/MainButton.vue';
 import MainH1 from '../components/MainH1.vue';
-import { updateAuthUserAvatar } from '../services/auth';
-import MainLoader from '../components/MainLoader.vue';
+import NotificationBox from '../components/NotificationBox.vue';
 
-const { avatar, updating, handleSubmit, handleFileChange } = useAvatarUploadForm();
+const { avatar, updating, feedback, handleSubmit, handleFileChange } = useAvatarUploadForm();
 
 function useAvatarUploadForm() {
     const avatar = ref({
@@ -13,23 +13,37 @@ function useAvatarUploadForm() {
         objectURL: null,    // El objeto ObjectURL que contiene el contenido para mostrar en un <img> local.
     });
     const updating = ref(false);
+    const feedback = ref({
+        type: 'success',
+        message: null,
+        title: null,
+    });
 
     async function handleSubmit() {
-        try {
-            // Si no hay archivo, o estamos actualizándolo, no hacemos nada.
-            if(!avatar.value.file) return;
-            if(updating.value) return;
+        feedback.value.message = null;
 
-            try {
-                updating.value = true;
-                await updateAuthUserAvatar(avatar.value.file);
-            } catch (error) {
-                // TODO...
+        // Si no hay archivo, o estamos actualizándolo, no hacemos nada.
+        if(!avatar.value.file) return;
+        if(updating.value) return;
+
+        try {
+            updating.value = true;
+            await updateAuthUserAvatar(avatar.value.file);
+            feedback.value = {
+                ...feedback.value,
+                type: 'success',
+                message: 'Tu imagen de perfil se actualizó con éxito.',
+                title: 'Éxito',
             }
-            updating.value = false;
         } catch (error) {
-            
+            feedback.value = {
+                ...feedback.value,
+                type: 'error',
+                message: 'Ocurrió un error al tratar de actualizar tu imagen de perfil.',
+                title: 'Error',
+            }
         }
+        updating.value = false;
     }
 
     async function handleFileChange(event) {
@@ -76,6 +90,7 @@ function useAvatarUploadForm() {
     return {
         avatar,
         updating,
+        feedback,
         handleSubmit,
         handleFileChange,
     }
@@ -84,6 +99,21 @@ function useAvatarUploadForm() {
 
 <template>
     <MainH1>Editar mi imagen de perfil</MainH1>
+
+    <NotificationBox
+        v-if="feedback.message != null"
+        :content="feedback"
+        @close="() => feedback.message = null"
+    >
+        <template
+            v-if="feedback.title"
+            v-slot:header
+        >
+            <h2 class="text-xl pb-2 mb-4 border-b">{{ feedback.title }}</h2>
+        </template>
+
+        {{ feedback.message }}
+    </NotificationBox>
 
     <form 
         action="#"
